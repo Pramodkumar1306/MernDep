@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import LogOut from '../components/LogOut.jsx'
 import axios from 'axios';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -20,11 +21,10 @@ export default function SitePage() {
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const response = await axios.post(`http://localhost:4000/api/expenses/getAllExpenses`, {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/expenses/getAllExpenses`, {
           site: site
         });
-        const data = response.data.data;
-
+        const data = response.data.data; 
         const normalized = data.map((item) => ({
   date: item.date || item.Date,
   description: item.description || item.Description,
@@ -59,7 +59,7 @@ export default function SitePage() {
     };
 
     try {
-      const res = await fetch("http://localhost:4000/api/expenses/add", {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/expenses/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -127,9 +127,12 @@ export default function SitePage() {
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 bg-gray-100 min-h-screen pt-8 sm:pt-12">
+      <div className="hidden sm:block mb-4 flex justify-end">
+        <LogOut />
+      </div>
       <h1 className="text-3xl font-bold text-center text-blue-800 mb-6">
-        Contractor Expense Tracker
+        Expense Tracker
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -169,27 +172,33 @@ export default function SitePage() {
         {expenses.length === 0 ? (
           <p className="text-gray-500">No expenses added yet.</p>
         ) : (
-          <table className="w-full text-sm text-left border">
-            <thead className="bg-gray-100">
-              <tr>
-                {["#", "Date", "Description", "Amount (₹)", "Payment Mode", "Category"].map((head, i) => (
-                  <th key={i} className="border px-2 py-1">{head}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {expenses.map((e, i) => (
-                <tr key={i}>
-                  <td className="border px-2 py-1">{i + 1}</td>
-                  <td className="border px-2 py-1">{e.date}</td>
-                  <td className="border px-2 py-1">{e.description}</td>
-                  <td className="border px-2 py-1">₹{e.amount}</td>
-                  <td className="border px-2 py-1">{e.paymentMode}</td>
-                  <td className="border px-2 py-1">{e.category}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="w-full">
+            <div className="overflow-x-auto">
+              <table className="min-w-[800px] w-full text-sm text-left border">
+                <thead className="bg-gray-100">
+                  <tr>
+                    {["#", "Date", "Description", "Amount (₹)", "Payment Mode", "Category"].map((head, i) => (
+                      <th key={i} className="border px-2 py-2 whitespace-nowrap">{head}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {expenses.map((e, i) => (
+                    <tr key={i}>
+                      <td className="border px-2 py-2 whitespace-nowrap">{i + 1}</td>
+                      <td className="border px-2 py-2 whitespace-nowrap">{e.date}</td>
+                      <td className="border px-2 py-2">{e.description}</td>
+                      <td className="border px-2 py-2 whitespace-nowrap">₹{e.amount}</td>
+                      <td className="border px-2 py-2 whitespace-nowrap">{e.paymentMode}</td>
+                      <td className="border px-2 py-2 whitespace-nowrap">{e.category}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+
         )}
 
         <button

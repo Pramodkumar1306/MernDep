@@ -1,7 +1,7 @@
     import { useEffect, useState } from "react";
     import { useNavigate } from "react-router-dom";
     import axios from "axios";
-
+    import LogOut from '../components/LogOut.jsx'
     export default function SiteSelection() {
     const [sites, setSites] = useState([]);
     const [newSite, setNewSite] = useState("");
@@ -10,7 +10,7 @@
     useEffect(() => {
         const fetchSites = async () => {
         try {
-            const res = await axios.get("http://localhost:4000/api/expenses/getCollections");
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/expenses/getCollections`);
             const siteArray = res.data.data.map(name => ({ name }));
             setSites(siteArray);
         } catch (err) {
@@ -23,20 +23,22 @@
     const addSite = async () => {
         if (!newSite.trim()) return; // Prevent adding empty or spaces-only site names
         try {
-        const res = await axios.post("http://localhost:4000/api/expenses/createCollection", { site: newSite });
-        // The backend returns the updated list of collections in res.data.data (array of names)
-        const updatedSites = res.data.data.map(name => ({ name }));
-        setSites(updatedSites);
-        setNewSite("");
+            const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/expenses/createCollection`, { site: newSite });
+            // The backend returns the updated list of collections in res.data.data (array of names)
+            const updatedSites = res.data.data.map(name => ({ name }));
+            setSites(updatedSites);
+            setNewSite("");
         } catch (err) {
-        console.error("Error adding site:", err);
+            console.error("Error adding site:", err);
         }
     };
 
     return (
+        <>
+            <LogOut/>
         <div className="flex items-center justify-center min-h-screen bg-blue-100 p-4">
             <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md text-center">
-            <h2 className="text-2xl font-bold mb-6 text-blue-700">Contractor Site Selection</h2>
+            <h2 className="text-2xl font-bold mb-6 text-blue-700">Site Name</h2>
 
             <div className="flex items-center justify-center mb-4 space-x-2">
                 <input
@@ -71,5 +73,6 @@
             )}
             </div>
         </div>
+        </>
         );
     }

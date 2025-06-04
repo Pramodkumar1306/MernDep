@@ -19,7 +19,7 @@
                     console.error(error);
                     res.status(500).json({ success: false, message: "Error adding expense" });
                 }
-            };
+        };
     
 
         const getAllExpenses = async (req, res) => {
