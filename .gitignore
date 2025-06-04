@@ -1,0 +1,24 @@
+# At root .gitignore file
+
+# Node modules anywhere (frontend/backend)
+node_modules/
+
+# Environment files anywhere
+.env
+.env.local
+.env.*.local
+
+# Build folders (frontend)
+build/
+dist/
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
