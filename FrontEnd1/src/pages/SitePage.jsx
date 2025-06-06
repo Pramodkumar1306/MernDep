@@ -60,6 +60,10 @@ export default function SitePage() {
   };
 
   const handleAddExpense = async () => {
+      if (!form.date || !form.description || !form.amount) {
+        alert("Please fill in all required fields.");
+        return;
+      }
     const payload = {
       site,
       Date: form.date,
@@ -165,8 +169,8 @@ export default function SitePage() {
         <h2 className="text-lg font-semibold mb-4">Add New Expense</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Input name="date" type="date" value={form.date} onChange={handleChange} />
-          <Input name="description" value={form.description} onChange={handleChange} placeholder="Description" />
-          <Input name="amount" type="number" value={form.amount} onChange={handleChange} placeholder="Amount (₹)" />
+          <Input name="description" value={form.description} onChange={handleChange} placeholder="Description" required/>
+          <Input name="amount" type="number" value={form.amount} onChange={handleChange} placeholder="Amount (₹)" required/>
           <Select name="paymentMode" value={form.paymentMode} onChange={handleChange} options={paymentModes} />
           <Select name="category" value={form.category} onChange={handleChange} options={categories} />
           <button onClick={handleAddExpense} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Expense</button>
@@ -227,8 +231,8 @@ export default function SitePage() {
   );
 }
 
-function Input({ name, value, onChange, type = "text", placeholder = "" }) {
-  return <input name={name} value={value} onChange={onChange} type={type} placeholder={placeholder} className="border p-2 rounded w-full" />;
+function Input({ name, value, onChange, type = "text", placeholder = "", required = true }) {
+  return <input name={name} value={value} onChange={onChange} type={type} placeholder={placeholder} required={required} className="border p-2 rounded w-full" />;
 }
 
 function Select({ name, value, onChange, options = [] }) {
