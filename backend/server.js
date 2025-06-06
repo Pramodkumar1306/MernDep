@@ -20,6 +20,7 @@ app.use('/api/expenses', expenseData);
 
 app.get('/', (req, res) => {
     res.send("Api Working");
+    console.log("working");
 })
 
 app.listen(PORT,() => {console.log(PORT)});
