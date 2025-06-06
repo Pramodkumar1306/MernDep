@@ -4,6 +4,7 @@ import SitePage from "./pages/SitePage";
 import LoginPage from "./pages/LoginPage";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
+// import NavBar from 
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,22 +15,25 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/login"
-          element={<LoginPage setIsLoggedIn={setIsLoggedIn} />}
-        />
-        <Route
-          path="/"
-          element={isLoggedIn ? <SiteSelection /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/site/:site"
-          element={isLoggedIn ? <SitePage /> : <Navigate to="/login" />}
-        />
-      </Routes>
-    </BrowserRouter>
+    <>
+      {/* <NavBar/> */}
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/login"
+            element={<LoginPage setIsLoggedIn={setIsLoggedIn} />}
+          />
+          <Route
+            path="/"
+            element={isLoggedIn ? <SiteSelection /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/site/:site"
+            element={isLoggedIn ? <SitePage /> : <Navigate to="/login" />}
+          />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 

@@ -1,5 +1,7 @@
     import { getModelBySite } from '../modules/getModelBySite.js';
     import mongoose  from 'mongoose'
+
+    
     const add = async (req, res) => {
             const siteName = req.body.site;  // get site name from request
             const ExpenseModel = getModelBySite(siteName);  // dynamically get model
@@ -11,7 +13,6 @@
                 paymentMode: req.body.Payment,
                 category: req.body.Category,
             });
-
                 try {
                     await newExpense.save();
                     res.json({ success: true, message: "Expense added successfully" });
@@ -39,8 +40,7 @@
     const createCollection = async (req, res) => {
         const siteName = req.body.site; // e.g., "siteA"
         const ExpenseModel = getModelBySite(siteName);
-        console.log("siteName:", siteName);
-        console.log("ExpenseModel:", ExpenseModel);
+        
 
 
         try {
@@ -67,8 +67,10 @@
     };
 
     const getCollections = async (req, res) => {
+        
     try {
         const collections = await mongoose.connection.db.listCollections().toArray();
+        
         const collectionNames = collections.map(col => col.name);
 
         res.json({
@@ -84,4 +86,18 @@
     }
 };
 
-    export { add,createCollection,getCollections,getAllExpenses };
+const deleteCol= async (req, res) => {
+    const siteName = req.params.site;
+        try {
+            await mongoose.connection.db.dropCollection(siteName);
+            // Send back updated list
+            const collections = await mongoose.connection.db.listCollections().toArray();
+            const names = collections.map(col => col.name);
+            res.json({ data: names });
+        } catch (err) {
+            res.status(500).json({ error: "Could not delete collection" });
+        }
+    };
+
+
+    export { add,createCollection,getCollections,getAllExpenses,deleteCol };

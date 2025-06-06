@@ -2,6 +2,7 @@
     import { useNavigate } from "react-router-dom";
     import axios from "axios";
     import LogOut from '../components/LogOut.jsx'
+    import NavBar from '../components/NavBar.jsx'
     export default function SiteSelection() {
     const [sites, setSites] = useState([]);
     const [newSite, setNewSite] = useState("");
@@ -20,22 +21,35 @@
         fetchSites();
     }, []);
 
-    const addSite = async () => {
-        if (!newSite.trim()) return; // Prevent adding empty or spaces-only site names
+    const handleDelete = async (siteName) => {
+        const confirmed = window.confirm(`Are you sure you want to delete "${siteName}"?`);
+        if (!confirmed) return;
+
         try {
-            const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/expenses/createCollection`, { site: newSite });
-            // The backend returns the updated list of collections in res.data.data (array of names)
-            const updatedSites = res.data.data.map(name => ({ name }));
-            setSites(updatedSites);
-            setNewSite("");
+        const res = await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/expenses/deleteCollection/${siteName}`);
+        const updatedSites = res.data.data.map(name => ({ name }));
+        setSites(updatedSites);
         } catch (err) {
-            console.error("Error adding site:", err);
+        console.error("Error deleting site:", err);
+        }
+    };
+
+    const addSite = async () => {
+        if (!newSite.trim()) return;
+        try {
+        const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/expenses/createCollection`, { site: newSite });
+        const updatedSites = res.data.data.map(name => ({ name }));
+        setSites(updatedSites);
+        setNewSite("");
+        } catch (err) {
+        console.error("Error adding site:", err);
         }
     };
 
     return (
         <>
-            <LogOut/>
+        <NavBar/>
+        
         <div className="flex items-center justify-center min-h-screen bg-blue-100 p-4">
             <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md text-center">
             <h2 className="text-2xl font-bold mb-6 text-blue-700">Site Name</h2>
@@ -59,20 +73,28 @@
                 <p className="text-gray-500">No sites added yet. Add your first site above.</p>
             ) : (
                 <ul className="space-y-2 mt-4 text-left">
-                {   
-                    sites.map(site => (
-                        <li
-                        key={site.name}
-                        onClick={() => navigate(`/site/${site.name}`)}
-                        className="cursor-pointer px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded transition"
-                        >
-                        {site.name}
-                        </li>
+                {sites.map(site => (
+                    <li
+                    key={site.name}
+                    onClick={() => navigate(`/site/${site.name}`)}
+                    className="cursor-pointer px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded transition"
+                    >
+                    {site.name}
+                    <button
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(site.name);
+                        }}
+                        className="float-right ml-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                    >
+                        Delete
+                    </button>
+                    </li>
                 ))}
                 </ul>
             )}
             </div>
         </div>
         </>
-        );
-    }
+    );
+    }   

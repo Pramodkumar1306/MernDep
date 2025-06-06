@@ -8,7 +8,7 @@ export default function LoginPage({ setIsLoggedIn }) {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    if (username === "varunpatil" && password === "123456") {
+    if (username === "a" && password === "a") {
       Cookies.set("auth", "true", { expires: 1 }); // 1 day
       setIsLoggedIn(true);
       navigate("/");

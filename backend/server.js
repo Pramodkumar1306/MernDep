@@ -7,26 +7,19 @@ dotenv.config();
 
 
 const app = express();
-
 const PORT = process.env.PORT || 4000;
 
-//middelware
+// middleware
 app.use(express.json());
 app.use(cors());
 connectDb();
 
+// API Endpoints
+app.use('/api/expenses', expenseData);
+// app.use('/images', express.static('uploads'))
 
-//api End Point 
-app.use('/api/expenses',expenseData);
-// app.use('/images',express.static('uploads'))
-
-app.get('/api',(req,res) => {
+app.get('/api', (req, res) => {
     res.send("Api Working");
 })
 
-
-
-app.listen(PORT, () => console.log(`Server running on port ${process.env.PORT}`));
-
-
-
+app.listen(PORT  );
