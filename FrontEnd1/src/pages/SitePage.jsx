@@ -23,7 +23,7 @@ export default function SitePage() {
   const [selectedPaymentMode, setSelectedPaymentMode] = useState("");
 
   const paymentModes = ["Cash", "UPI", "Bank Transfer"];
-  const categories = ["Salary", "Petrol", "Material", "Stationery"];
+  const categories = ["None", "Petrol/Desal", "Material", "Salary"];
 
   const filteredExpenses = expenses.filter((e) => {
     const descMatch = e.description?.toLowerCase().includes(searchText.toLowerCase());
@@ -35,7 +35,7 @@ export default function SitePage() {
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/expenses/getAllExpenses`, {
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/getAllExpenses`, {
           site,
         });
         const data = response.data.data || [];
@@ -70,7 +70,7 @@ export default function SitePage() {
     };
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/expenses/add`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
