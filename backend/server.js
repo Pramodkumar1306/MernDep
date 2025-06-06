@@ -18,8 +18,8 @@ connectDb();
 app.use('/api/expenses', expenseData);
 // app.use('/images', express.static('uploads'))
 
-app.get('/api', (req, res) => {
+app.get('/', (req, res) => {
     res.send("Api Working");
 })
 
-app.listen(PORT);
+app.listen(PORT,() => {console.log(PORT)});
