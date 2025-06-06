@@ -11,7 +11,7 @@
     useEffect(() => {
         const fetchSites = async () => {
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/expenses/getCollections`);
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/getCollections`);
             const siteArray = res.data.data.map(name => ({ name }));
             setSites(siteArray);
         } catch (err) {
