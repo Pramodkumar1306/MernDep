@@ -66,25 +66,49 @@
         }
     };
 
-    const getCollections = async (req, res) => {
+//     const getCollections = async (req, res) => {
         
-    try {
-        const collections = await mongoose.connection.db.listCollections().toArray();
-        
-        const collectionNames = collections.map(col => col.name);
+//     try {
+//         const collections = await mongoose.connection.db.listCollections().toArray();
+//         const collectionNames = collections.map(col => col.name);
 
-        res.json({
-            success: true,
-            data: collectionNames,
-        });
-    } catch (error) {
-        console.error("Error fetching collections:", error);
-        res.status(500).json({
+//         res.json({
+//             success: true,
+//             data: collectionNames,
+//         });
+//     } catch (error) {
+//         console.error("Error fetching collections:", error);
+//         res.status(500).json({
+//             success: false,
+//             message: "Failed to fetch collections",
+//         });
+//     }
+// };
+
+const getCollections = async (req, res) => {
+    try {
+        if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+        return res.status(500).json({
             success: false,
-            message: "Failed to fetch collections",
+            message: "DB not connected",
+        });
+        }
+
+        const collections = await mongoose.connection.db.listCollections().toArray();
+        const names = collections.map(col => col.name);
+
+        res.json({ success: true, data: names });
+    } catch (error) {
+        console.error("❌ Error fetching collections:", error);
+        res.status(500).json({
+        success: false,
+        message: "Failed to fetch collections",
         });
     }
 };
+
+
+
 
 const deleteCol= async (req, res) => {
     const siteName = req.params.site;
