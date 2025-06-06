@@ -22,5 +22,4 @@ app.get('/', (req, res) => {
     res.send("Api Working");
 })
 
-module.exports = app;
-
+app.listen(PORT,() => {console.log(PORT)});
