@@ -7,7 +7,7 @@ const connectDb = async() => {
     
     try{
         await mongoos.connect(`${mongoUri}/newData`);
-        
+        console.log(' MongoDB connected successfully')
     }catch(error){
         console.log('Mongo Connection Db Error'+error)
     }
