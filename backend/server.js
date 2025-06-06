@@ -22,4 +22,4 @@ app.get('/api', (req, res) => {
     res.send("Api Working");
 })
 
-app.listen(PORT  );
+app.listen(PORT);
