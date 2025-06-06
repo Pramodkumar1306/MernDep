@@ -26,7 +26,7 @@
         if (!confirmed) return;
 
         try {
-        const res = await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/expenses/deleteCollection/${siteName}`);
+        const res = await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/deleteCollection/${siteName}`);
         const updatedSites = res.data.data.map(name => ({ name }));
         setSites(updatedSites);
         } catch (err) {
@@ -37,7 +37,7 @@
     const addSite = async () => {
         if (!newSite.trim()) return;
         try {
-        const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/expenses/createCollection`, { site: newSite });
+        const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/createCollection`, { site: newSite });
         const updatedSites = res.data.data.map(name => ({ name }));
         setSites(updatedSites);
         setNewSite("");
