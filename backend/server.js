@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import connectDb from './config/mongodb.js';
 import expenseData from './routers/expenseData.js';
+import testRoute from './routers/textRoute.js'
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -16,6 +17,7 @@ connectDb();
 
 // API Endpoints
 app.use('/api/expenses', expenseData);
+app.use('/api/test', testRoute);
 // app.use('/images', express.static('uploads'))
 
 app.get('/', (req, res) => {
