@@ -21,6 +21,7 @@ export default function SitePage() {
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedPaymentMode, setSelectedPaymentMode] = useState("");
+  const [editingIndex, setEditingIndex] = useState(null);
 
   const paymentModes = ["Cash", "UPI", "Bank Transfer"];
   const categories = ["None", "Petrol/Desal", "Material", "Salary"];
@@ -60,51 +61,92 @@ export default function SitePage() {
   };
 
   const handleAddExpense = async () => {
-      if (!form.date || !form.description || !form.amount) {
-        alert("Please fill in all required fields.");
-        return;
-      }
-    const payload = {
-      site,
-      Date: form.date,
-      Description: form.description,
-      Amount: form.amount,
-      Payment: form.paymentMode,
-      Category: form.category,
-    };
+    if (!form.date || !form.description || !form.amount) {
+      alert("Please fill in all required fields.");
+      return;
+    }
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    if (editingIndex !== null) {
+      const updated = [...expenses];
+      updated[editingIndex] = {
+        date: form.date,
+        description: form.description,
+        amount: form.amount,
+        paymentMode: form.paymentMode,
+        category: form.category,
+      };
+      setExpenses(updated);
+      setEditingIndex(null);
+      alert("✏️ Expense updated successfully!");
+    } else {
+      const payload = {
+        site,
+        Date: form.date,
+        Description: form.description,
+        Amount: form.amount,
+        Payment: form.paymentMode,
+        Category: form.category,
+      };
 
-      const result = await res.json();
-      if (result.success) {
-        setExpenses((prev) => [
-          ...prev,
-          {
-            date: form.date,
-            description: form.description,
-            amount: form.amount,
-            paymentMode: form.paymentMode,
-            category: form.category,
-          },
-        ]);
-        setForm({
-          date: "",
-          description: "",
-          amount: "",
-          paymentMode: "Cash",
-          category: "Salary",
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         });
-      } else {
-        alert("Failed to add expense: " + (result.message || "Unknown error"));
+
+        const result = await res.json();
+        if (result.success) {
+          setExpenses((prev) => [
+            ...prev,
+            {
+              date: form.date,
+              description: form.description,
+              amount: form.amount,
+              paymentMode: form.paymentMode,
+              category: form.category,
+            },
+          ]
+          
+        );
+        alert("✅ Expense Added successfully!");
+        } else {
+          alert("Failed to add expense: " + (result.message || "Unknown error"));
+        }
+      } catch (err) {
+        console.error("Error adding expense:", err);
+        alert("Server error while adding expense.");
       }
-    } catch (err) {
-      console.error("Error adding expense:", err);
-      alert("Server error while adding expense.");
+    }
+
+    setForm({
+      date: "",
+      description: "",
+      amount: "",
+      paymentMode: "Cash",
+      category: "Salary",
+    });
+  };
+
+  const handleEdit = (index) => {
+    const item = filteredExpenses[index];
+    setForm({
+      date: item.date,
+      description: item.description,
+      amount: item.amount,
+      paymentMode: item.paymentMode,
+      category: item.category,
+    });
+    setEditingIndex(index);
+    // alert("✏️ Expense updated successfully!");
+  };
+
+  const handleDelete = (index) => {
+    if (window.confirm("Are you sure you want to delete this expense?")) {
+      const updated = [...expenses];
+      updated.splice(index, 1);
+      setExpenses(updated);
+        // alert("🗑️ Expense deleted successfully!");
     }
   };
 
@@ -166,14 +208,16 @@ export default function SitePage() {
       </div>
 
       <div className="bg-white p-4 sm:p-6 rounded shadow mb-6">
-        <h2 className="text-lg font-semibold mb-4">Add New Expense</h2>
+        <h2 className="text-lg font-semibold mb-4">{editingIndex !== null ? "Edit Expense" : "Add New Expense"}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Input name="date" type="date" value={form.date} onChange={handleChange} />
-          <Input name="description" value={form.description} onChange={handleChange} placeholder="Description" required/>
-          <Input name="amount" type="number" value={form.amount} onChange={handleChange} placeholder="Amount (₹)" required/>
+          <Input name="description" value={form.description} onChange={handleChange} placeholder="Description" required />
+          <Input name="amount" type="number" value={form.amount} onChange={handleChange} placeholder="Amount (₹)" required />
           <Select name="paymentMode" value={form.paymentMode} onChange={handleChange} options={paymentModes} />
           <Select name="category" value={form.category} onChange={handleChange} options={categories} />
-          <button onClick={handleAddExpense} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Expense</button>
+          <button onClick={handleAddExpense} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            {editingIndex !== null ? "Update Expense" : "Add Expense"}
+          </button>
         </div>
       </div>
 
@@ -181,20 +225,46 @@ export default function SitePage() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
           <h2 className="text-lg font-semibold">Expense Entries</h2>
           <div className="flex gap-2 flex-wrap">
-            <button onClick={generatePDF} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download PDF</button>
-            <button onClick={downloadCSV} className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">Download CSV</button>
+            <button onClick={generatePDF} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+              Download PDF
+            </button>
+            <button onClick={downloadCSV} className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
+              Download CSV
+            </button>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-4">
-          <input type="text" placeholder="Search Description" className="border p-2 rounded w-full sm:w-auto" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
-          <select className="border p-2 rounded w-full sm:w-auto" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+          <input
+            type="text"
+            placeholder="Search Description"
+            className="border p-2 rounded w-full sm:w-auto"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <select
+            className="border p-2 rounded w-full sm:w-auto"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
             <option value="">All Categories</option>
-            {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
-          <select className="border p-2 rounded w-full sm:w-auto" value={selectedPaymentMode} onChange={(e) => setSelectedPaymentMode(e.target.value)}>
+          <select
+            className="border p-2 rounded w-full sm:w-auto"
+            value={selectedPaymentMode}
+            onChange={(e) => setSelectedPaymentMode(e.target.value)}
+          >
             <option value="">All Payment Modes</option>
-            {paymentModes.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
+            {paymentModes.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -205,8 +275,10 @@ export default function SitePage() {
             <table className="min-w-[600px] w-full text-sm text-left border">
               <thead className="bg-gray-100">
                 <tr>
-                  {["#", "Date", "Description", "Amount (₹)", "Payment Mode", "Category"].map((head, i) => (
-                    <th key={i} className="border px-2 py-2 whitespace-nowrap">{head}</th>
+                  {["SNo", "Date", "Description", "Amount (₹)", "Payment", "Mode", "Actions"].map((head, i) => (
+                    <th key={i} className="border px-2 py-2 whitespace-nowrap">
+                      {head}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -219,13 +291,26 @@ export default function SitePage() {
                     <td className="border px-2 py-2">₹{e.amount}</td>
                     <td className="border px-2 py-2">{e.paymentMode}</td>
                     <td className="border px-2 py-2">{e.category}</td>
+                    <td className="border px-2 py-2 flex gap-2">
+                      <button className="text-blue-600" onClick={() => handleEdit(i)}>
+                        Edit
+                      </button>
+                      <button className="text-red-600" onClick={() => handleDelete(i)}>
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-        <button onClick={() => navigate("/")} className="mt-6 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded w-full sm:w-auto">← Back</button>
+        <button
+          onClick={() => navigate("/")}
+          className="mt-6 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded w-full sm:w-auto"
+        >
+          ← Back
+        </button>
       </div>
     </div>
   );
@@ -239,7 +324,9 @@ function Select({ name, value, onChange, options = [] }) {
   return (
     <select name={name} value={value} onChange={onChange} className="border p-2 rounded w-full">
       {options.map((opt) => (
-        <option key={opt} value={opt}>{opt}</option>
+        <option key={opt} value={opt}>
+          {opt}
+        </option>
       ))}
     </select>
   );
