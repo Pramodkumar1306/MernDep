@@ -33,7 +33,7 @@ export default function SitePage() {
     const catMatch = selectedCategory ? e.category === selectedCategory : true;
     const payMatch = selectedPaymentMode ? e.paymentMode === selectedPaymentMode : true;
     return descMatch && catMatch && payMatch;
-  });
+  }).sort((a,b) => new Date(a.date) - new Date(b.date));
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -130,8 +130,19 @@ export default function SitePage() {
     });
   };
 
-  const handleEdit = (index) => {
-    const item = filteredExpenses[index];
+const handleEdit = (indexInFiltered) => {
+  const item = filteredExpenses[indexInFiltered];
+
+  const realIndex = expenses.findIndex(
+    (e) =>
+      e.date === item.date &&
+      e.description === item.description &&
+      Number(e.amount) === Number(item.amount) &&
+      e.paymentMode === item.paymentMode &&
+      e.category === item.category
+  );
+
+  if (realIndex !== -1) {
     setForm({
       date: item.date,
       description: item.description,
@@ -139,50 +150,84 @@ export default function SitePage() {
       paymentMode: item.paymentMode,
       category: item.category,
     });
-    setEditingIndex(index);
-    // alert("✏️ Expense updated successfully!");
-  };
+    setEditingIndex(realIndex); // 👈 store original index
+  }
+};
 
-  const handleDelete = (index) => {
-    if (window.confirm("Are you sure you want to delete this expense?")) {
+  const handleDelete = (indexInFiltered) => {
+  if (window.confirm("Are you sure you want to delete this expense?")) {
+    const itemToDelete = filteredExpenses[indexInFiltered];
+
+    // Find the index of this item in the original expenses array:
+    const indexInExpenses = expenses.findIndex(
+      (e) =>
+        e.date === itemToDelete.date &&
+        e.description === itemToDelete.description &&
+        Number(e.amount) === Number(itemToDelete.amount) &&
+        e.paymentMode === itemToDelete.paymentMode &&
+        e.category === itemToDelete.category
+    );
+
+    if (indexInExpenses > -1) {
       const updated = [...expenses];
-      updated.splice(index, 1);
+      updated.splice(indexInExpenses, 1);
       setExpenses(updated);
-        // alert("🗑️ Expense deleted successfully!");
     }
-  };
+  }
+};
+
 
 const generatePDF = () => {
   const doc = new jsPDF();
 
-  // Set background image (your letterhead)
-  const imgProps = doc.getImageProperties(letterhead);
   const pdfWidth = doc.internal.pageSize.getWidth();
   const pdfHeight = doc.internal.pageSize.getHeight();
   doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
 
-  const tableColumn = ["S.No", "Date", "Description", "Amount", "Payment Mode", "Category"];
-  const tableRows = filteredExpenses.map((e, i) => [
-    i + 1,
-    new Date(e.date).toLocaleDateString("en-IN"),
-    e.description,
-    `₹${e.amount}`,
-    e.paymentMode,
-    e.category,
-  ]);
+  doc.setFontSize(16);
+  doc.setTextColor(22, 160, 133);
+  doc.text(`This is the ${site} site`, pdfWidth / 2, 40, { align: "center" });
 
-  autoTable(doc, {
-    head: [tableColumn],
-    body: tableRows,
-    startY: 60, // Adjust to fit in the center of your letterhead
-    margin: { left: 10, right: 10 },
-    theme: "striped",
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [22, 160, 133] },
-  });
+  const tableColumn = ["S.No", "Date", "Description", "Amount", "Payment Mode", "Category"];
+  const rowsPerPage = 28;
+  let startY = 45;
+
+  for (let i = 0; i < filteredExpenses.length; i += rowsPerPage) {
+    const rowsChunk = filteredExpenses.slice(i, i + rowsPerPage).map((e, idx) => [
+      i + idx + 1,
+      new Date(e.date).toLocaleDateString("en-IN"),
+      e.description,
+      `₹${Number(e.amount).toLocaleString("en-IN")}`,
+      e.paymentMode,
+      e.category,
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: rowsChunk,
+      startY,
+      margin: { left: 10, right: 10 },
+      theme: "striped",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] },
+      pageBreak: "avoid", // avoid breaking chunk between pages, since we chunk manually
+    });
+
+    startY = doc.internal.pageSize.getHeight() - 10; // or reset for next page
+    if (i + rowsPerPage < filteredExpenses.length) {
+      doc.addPage();
+      // Add background and header for new page if you want:
+      doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
+      doc.setFontSize(16);
+      doc.setTextColor(22, 160, 133);
+      doc.text(`This is the ${site} site`, pdfWidth / 2, 40, { align: "center" });
+      startY = 45;
+    }
+  }
 
   doc.save(`${site}-expenses.pdf`);
 };
+
 
 
   const downloadCSV = () => {
