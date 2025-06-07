@@ -85,6 +85,35 @@
 //     }
 // };
 
+const updateExpense = async (req, res) => {
+    const siteName = req.body.site;
+    const ExpenseModel = getModelBySite(siteName);
+    const expenseId = req.params.id;
+
+    try {
+        const updatedExpense = await ExpenseModel.findByIdAndUpdate(
+        expenseId,
+        {
+            date: req.body.Date,
+            description: req.body.Description,
+            amount: req.body.Amount,
+            paymentMode: req.body.Payment,
+            category: req.body.Category,
+        },
+        { new: true }
+        );
+        if (!updatedExpense) {
+        return res.status(404).json({ success: false, message: "Expense not found" });
+        }
+        res.json({ success: true, data: updatedExpense, message: "Expense updated" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Error updating expense" });
+    }
+};
+
+
+
 const getCollections = async (req, res) => {
     try {
         if (!mongoose.connection || mongoose.connection.readyState !== 1) {
@@ -109,6 +138,24 @@ const getCollections = async (req, res) => {
 
 
 
+const deleteExpense = async (req, res) => {
+    const siteName = req.params.site;  // changed from req.body.site
+    const expenseId = req.params.id;
+
+    const ExpenseModel = getModelBySite(siteName);
+
+    try {
+        const deletedExpense = await ExpenseModel.findByIdAndDelete(expenseId);
+        if (!deletedExpense) {
+            return res.status(404).json({ success: false, message: "Expense not found" });
+        }
+        res.json({ success: true, message: "Expense deleted" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Error deleting expense" });
+    }
+};
+
 
 const deleteCol= async (req, res) => {
     const siteName = req.params.site;
@@ -124,4 +171,12 @@ const deleteCol= async (req, res) => {
     };
 
 
-    export { add,createCollection,getCollections,getAllExpenses,deleteCol };
+export {
+    add,
+    createCollection,
+    getCollections,
+    getAllExpenses,
+    deleteCol,
+    updateExpense,
+    deleteExpense,
+};
