@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import LogOut from "../components/LogOut.jsx";
 import axios from "axios";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import letterhead from '../assets/letterhead.jpg'
 
+console.log(letterhead);
 export default function SitePage() {
   const navigate = useNavigate();
   const { site } = useParams();
@@ -150,26 +152,38 @@ export default function SitePage() {
     }
   };
 
-  const generatePDF = () => {
-    const doc = new jsPDF();
-    doc.text(`Expense Report for Site: ${site}`, 14, 15);
-    const tableData = filteredExpenses.map((e, i) => [
-      i + 1,
-      e.date,
-      e.description,
-      `₹${e.amount}`,
-      e.paymentMode,
-      e.category,
-    ]);
-    doc.autoTable({
-      head: [["#", "Date", "Description", "Amount", "Payment Mode", "Category"]],
-      body: tableData,
-      startY: 25,
-      styles: { fontSize: 10 },
-      theme: "striped",
-    });
-    doc.save(`${site}-expenses.pdf`);
-  };
+const generatePDF = () => {
+  const doc = new jsPDF();
+
+  // Set background image (your letterhead)
+  const imgProps = doc.getImageProperties(letterhead);
+  const pdfWidth = doc.internal.pageSize.getWidth();
+  const pdfHeight = doc.internal.pageSize.getHeight();
+  doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
+
+  const tableColumn = ["S.No", "Date", "Description", "Amount", "Payment Mode", "Category"];
+  const tableRows = filteredExpenses.map((e, i) => [
+    i + 1,
+    new Date(e.date).toLocaleDateString("en-IN"),
+    e.description,
+    `₹${e.amount}`,
+    e.paymentMode,
+    e.category,
+  ]);
+
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 60, // Adjust to fit in the center of your letterhead
+    margin: { left: 10, right: 10 },
+    theme: "striped",
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [22, 160, 133] },
+  });
+
+  doc.save(`${site}-expenses.pdf`);
+};
+
 
   const downloadCSV = () => {
     if (filteredExpenses.length === 0) return;
@@ -183,7 +197,7 @@ export default function SitePage() {
       e.category,
     ]);
     const total = filteredExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-    rows.push(["", "", "", `Total: ₹${total}`, "", ""]);
+    rows.push(["", "", "", `Total: ₹  ${total}`, "", ""]);
     const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -288,7 +302,7 @@ export default function SitePage() {
                     <td className="border px-2 py-2">{i + 1}</td>
                     <td className="border px-2 py-2">{new Date(e.date).toLocaleDateString("en-IN")}</td>
                     <td className="border px-2 py-2">{e.description}</td>
-                    <td className="border px-2 py-2">₹{e.amount}</td>
+                    <td className="border px-2 py-2">₹ {e.amount}</td>
                     <td className="border px-2 py-2">{e.paymentMode}</td>
                     <td className="border px-2 py-2">{e.category}</td>
                     <td className="border px-2 py-2 flex gap-2">
