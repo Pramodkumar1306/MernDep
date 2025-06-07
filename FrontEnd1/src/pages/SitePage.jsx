@@ -23,17 +23,29 @@ export default function SitePage() {
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedPaymentMode, setSelectedPaymentMode] = useState("");
+  const [fromDate, setFromDate] = useState("");  // <-- added
+  const [toDate, setToDate] = useState("");      // <-- added
   const [editingIndex, setEditingIndex] = useState(null);
 
   const paymentModes = ["Cash", "UPI", "Bank Transfer"];
   const categories = ["None", "Petrol/Desal", "Material", "Salary"];
 
-  const filteredExpenses = expenses.filter((e) => {
-    const descMatch = e.description?.toLowerCase().includes(searchText.toLowerCase());
-    const catMatch = selectedCategory ? e.category === selectedCategory : true;
-    const payMatch = selectedPaymentMode ? e.paymentMode === selectedPaymentMode : true;
-    return descMatch && catMatch && payMatch;
-  }).sort((a,b) => new Date(a.date) - new Date(b.date));
+  const filteredExpenses = expenses
+    .filter((e) => {
+      const descMatch = e.description?.toLowerCase().includes(searchText.toLowerCase());
+      const catMatch = selectedCategory ? e.category === selectedCategory : true;
+      const payMatch = selectedPaymentMode ? e.paymentMode === selectedPaymentMode : true;
+
+      const expenseDate = new Date(e.date);
+      const from = fromDate ? new Date(fromDate) : null;
+      const to = toDate ? new Date(toDate) : null;
+
+      const fromMatch = from ? expenseDate >= from : true;
+      const toMatch = to ? expenseDate <= to : true;
+
+      return descMatch && catMatch && payMatch && fromMatch && toMatch;
+    })
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -108,10 +120,8 @@ export default function SitePage() {
               paymentMode: form.paymentMode,
               category: form.category,
             },
-          ]
-          
-        );
-        alert("✅ Expense Added successfully!");
+          ]);
+          alert("✅ Expense Added successfully!");
         } else {
           alert("Failed to add expense: " + (result.message || "Unknown error"));
         }
@@ -130,54 +140,52 @@ export default function SitePage() {
     });
   };
 
-const handleEdit = (indexInFiltered) => {
-  const item = filteredExpenses[indexInFiltered];
+  const handleEdit = (indexInFiltered) => {
+    const item = filteredExpenses[indexInFiltered];
 
-  const realIndex = expenses.findIndex(
-    (e) =>
-      e.date === item.date &&
-      e.description === item.description &&
-      Number(e.amount) === Number(item.amount) &&
-      e.paymentMode === item.paymentMode &&
-      e.category === item.category
-  );
-
-  if (realIndex !== -1) {
-    setForm({
-      date: item.date,
-      description: item.description,
-      amount: item.amount,
-      paymentMode: item.paymentMode,
-      category: item.category,
-    });
-    setEditingIndex(realIndex); // 👈 store original index
-  }
-};
-
-  const handleDelete = (indexInFiltered) => {
-  if (window.confirm("Are you sure you want to delete this expense?")) {
-    const itemToDelete = filteredExpenses[indexInFiltered];
-
-    // Find the index of this item in the original expenses array:
-    const indexInExpenses = expenses.findIndex(
+    const realIndex = expenses.findIndex(
       (e) =>
-        e.date === itemToDelete.date &&
-        e.description === itemToDelete.description &&
-        Number(e.amount) === Number(itemToDelete.amount) &&
-        e.paymentMode === itemToDelete.paymentMode &&
-        e.category === itemToDelete.category
+        e.date === item.date &&
+        e.description === item.description &&
+        Number(e.amount) === Number(item.amount) &&
+        e.paymentMode === item.paymentMode &&
+        e.category === item.category
     );
 
-    if (indexInExpenses > -1) {
-      const updated = [...expenses];
-      updated.splice(indexInExpenses, 1);
-      setExpenses(updated);
+    if (realIndex !== -1) {
+      setForm({
+        date: item.date,
+        description: item.description,
+        amount: item.amount,
+        paymentMode: item.paymentMode,
+        category: item.category,
+      });
+      setEditingIndex(realIndex);
     }
-  }
-};
+  };
 
+  const handleDelete = (indexInFiltered) => {
+    if (window.confirm("Are you sure you want to delete this expense?")) {
+      const itemToDelete = filteredExpenses[indexInFiltered];
 
-const generatePDF = () => {
+      const indexInExpenses = expenses.findIndex(
+        (e) =>
+          e.date === itemToDelete.date &&
+          e.description === itemToDelete.description &&
+          Number(e.amount) === Number(itemToDelete.amount) &&
+          e.paymentMode === itemToDelete.paymentMode &&
+          e.category === itemToDelete.category
+      );
+
+      if (indexInExpenses > -1) {
+        const updated = [...expenses];
+        updated.splice(indexInExpenses, 1);
+        setExpenses(updated);
+      }
+    }
+  };
+
+ const generatePDF = () => {
   const doc = new jsPDF();
 
   const pdfWidth = doc.internal.pageSize.getWidth();
@@ -186,7 +194,17 @@ const generatePDF = () => {
 
   doc.setFontSize(16);
   doc.setTextColor(22, 160, 133);
-  doc.text(`This is the ${site} site`, pdfWidth / 2, 40, { align: "center" });
+  doc.text(`${site}`, 10, 40, { align: "left" });
+
+  // Format dates or fallback to "-"
+  const fromDateText = fromDate ? new Date(fromDate).toLocaleDateString("en-IN") : "-";
+  const toDateText = toDate ? new Date(toDate).toLocaleDateString("en-IN") : "-";
+
+  // Show date range on the right side (aligned right)
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`From: ${fromDateText}`, pdfWidth - 10, 30, { align: "right" });
+  doc.text(`To: ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
 
   const tableColumn = ["S.No", "Date", "Description", "Amount", "Payment Mode", "Category"];
   const rowsPerPage = 28;
@@ -197,7 +215,7 @@ const generatePDF = () => {
       i + idx + 1,
       new Date(e.date).toLocaleDateString("en-IN"),
       e.description,
-      `₹${Number(e.amount).toLocaleString("en-IN")}`,
+      `$ ${Number(e.amount).toLocaleString("en-IN")}`,
       e.paymentMode,
       e.category,
     ]);
@@ -210,25 +228,30 @@ const generatePDF = () => {
       theme: "striped",
       styles: { fontSize: 10 },
       headStyles: { fillColor: [22, 160, 133] },
-      pageBreak: "avoid", // avoid breaking chunk between pages, since we chunk manually
+      pageBreak: "avoid",
     });
 
-    startY = doc.internal.pageSize.getHeight() - 10; // or reset for next page
+    startY = doc.internal.pageSize.getHeight() - 10;
     if (i + rowsPerPage < filteredExpenses.length) {
       doc.addPage();
-      // Add background and header for new page if you want:
       doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
       doc.setFontSize(16);
       doc.setTextColor(22, 160, 133);
-      doc.text(`This is the ${site} site`, pdfWidth / 2, 40, { align: "center" });
+      doc.text(`${site}`, 10, 40, { align: "left" });
+
+      // Repeat date range on new pages as well
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`From: ${fromDateText}`, pdfWidth - 10, 30, { align: "right" });
+      doc.text(`To: ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
+
       startY = 45;
     }
   }
 
   doc.save(`${site}-expenses.pdf`);
 };
-
-
+  
 
   const downloadCSV = () => {
     if (filteredExpenses.length === 0) return;
@@ -325,6 +348,21 @@ const generatePDF = () => {
               </option>
             ))}
           </select>
+          {/* Added From Date and To Date inputs */}
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="border p-2 rounded w-full sm:w-auto"
+            placeholder="From Date"
+          />
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="border p-2 rounded w-full sm:w-auto"
+            placeholder="To Date"
+          />
         </div>
 
         {filteredExpenses.length === 0 ? (

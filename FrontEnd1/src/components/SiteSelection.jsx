@@ -26,7 +26,8 @@
         if (!confirmed) return;
 
         try {
-        const res = await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/deleteCollection/${siteName}`);
+const res = await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/deleteCollection/${encodeURIComponent(siteName)}`);
+
         const updatedSites = res.data.data.map(name => ({ name }));
         setSites(updatedSites);
         } catch (err) {
