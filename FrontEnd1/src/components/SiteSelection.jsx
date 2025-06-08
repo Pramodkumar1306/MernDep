@@ -89,7 +89,7 @@ export default function SiteSelection() {
           <input
             value={newSite}
             onChange={(e) => setNewSite(e.target.value)}
-            placeholder="Search for products..."
+            placeholder="Add sites..."
             className="w-full sm:w-[400px] border border-blue-400 rounded-full px-6 py-2 outline-none"
           />
           <button onClick={addSite} className="w-full sm:w-auto bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-600">
