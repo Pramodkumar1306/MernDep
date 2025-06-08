@@ -7,7 +7,7 @@ export default function Navigation() {
   const [showProfile, setShowProfile] = useState(false);
 
   const profileData = {
-    name: "NK Patil Construction",
+    name: "NK PATIL CONSTRUCTION COMPANY",
     age: "29EPKPP2663M1Z1",
     email: "nkpatil3980@gmail.com",
     phone: "+91 9448111276",
@@ -43,8 +43,8 @@ export default function Navigation() {
           showProfile ? "translate-x-0" : "translate-x-full"
         } flex flex-col`}
       >
-        {/* Top Section Scrollable */}
-        <div className="overflow-y-auto flex-grow">
+        {/* Top Scrollable Area */}
+        <div className="overflow-y-auto flex-grow top-5">
           <div className="flex justify-between items-center p-4 border-b">
             <h2 className="font-bold text-lg text-blue-700">User Profile</h2>
             <IoMdClose
@@ -54,10 +54,12 @@ export default function Navigation() {
           </div>
 
           <div className="p-4 space-y-3 text-sm text-gray-700 flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold">
+            <div className="w-20 h-20 mt-5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold">
               NK
             </div>
-            <p className="font-semibold text-base text-blue-700">{profileData.name}</p>
+            {/* <p className="font-semibold text-base text-blue-700">{profileData.name}</p> */}
+            <p className="font-semibold text-base text-blue-700">NK PATIL CONSTRUCTION</p>
+            <p className="font-semibold text-base text-blue-700">COMPANY</p>
             <p><strong>GST No:</strong> {profileData.age}</p>
             <p><strong>Email:</strong> {profileData.email}</p>
             <p><strong>Phone:</strong> {profileData.phone}</p>
@@ -66,7 +68,7 @@ export default function Navigation() {
         </div>
 
         {/* Fixed Logout Button at Bottom */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t bg-white sticky bottom-5">
           <LogOut />
         </div>
       </div>

@@ -23,7 +23,7 @@ export default function LoginPage({ setIsLoggedIn }) {
         setError("❌ Invalid credentials");
       }
       setLoading(false);
-    }, 1000);
+    }, 500);
   };
 
   return (

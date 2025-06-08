@@ -211,7 +211,7 @@ export default function SitePage() {
         i + idx + 1,
         new Date(e.date).toLocaleDateString("en-IN"),
         e.description,
-        `$ ${Number(e.amount).toLocaleString("en-IN")}`,
+        `${Number(e.amount).toLocaleString("en-IN")}`,
         e.paymentMode,
         e.category,
       ]);
@@ -224,6 +224,7 @@ export default function SitePage() {
         theme: "striped",
         styles: { fontSize: 10 },
         headStyles: { fillColor: [22, 160, 133] },
+        3:{halign:'center'},
         pageBreak: "avoid",
       });
 
@@ -343,7 +344,7 @@ export default function SitePage() {
               </option>
             ))}
           </select>
-          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">From</label>
+          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">Date From</label>
           <input
             type="date"
             value={fromDate}
@@ -351,7 +352,7 @@ export default function SitePage() {
             className="border p-2 rounded w-full sm:w-auto"
             placeholder="From Date"
           />
-          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">To </label>
+          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">Date To</label>
           <input
             type="date"
             value={toDate}
