@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { User } from "lucide-react";
 import { IoMdClose } from "react-icons/io";
+import LogOut from "../components/LogOut.jsx";
 
 export default function Navigation() {
   const [showProfile, setShowProfile] = useState(false);
@@ -19,7 +20,6 @@ export default function Navigation() {
       <nav className="bg-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-end items-center h-16">
-            {/* Right: Profile Icon */}
             <button onClick={() => setShowProfile(true)}>
               <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-white" />
@@ -41,24 +41,33 @@ export default function Navigation() {
       <div
         className={`fixed top-0 right-0 h-full w-72 bg-white shadow-lg z-50 transition-transform duration-300 ease-in-out ${
           showProfile ? "translate-x-0" : "translate-x-full"
-        }`}
+        } flex flex-col`}
       >
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="font-bold text-lg text-blue-700">User Profile</h2>
-          <IoMdClose
-            className="text-2xl cursor-pointer text-red-500"
-            onClick={() => setShowProfile(false)}
-          />
-        </div>
-        <div className="p-4 space-y-3 text-sm text-gray-700 flex flex-col items-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold">
-            NK
+        {/* Top Section Scrollable */}
+        <div className="overflow-y-auto flex-grow">
+          <div className="flex justify-between items-center p-4 border-b">
+            <h2 className="font-bold text-lg text-blue-700">User Profile</h2>
+            <IoMdClose
+              className="text-2xl cursor-pointer text-red-500"
+              onClick={() => setShowProfile(false)}
+            />
           </div>
-          <p className="font-semibold text-base text-blue-700">{profileData.name}</p>
-          <p><strong>GST No:</strong> {profileData.age}</p>
-          <p><strong>Email:</strong> {profileData.email}</p>
-          <p><strong>Phone:</strong> {profileData.phone}</p>
-          <p><strong>Address:</strong> {profileData.address}</p>
+
+          <div className="p-4 space-y-3 text-sm text-gray-700 flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold">
+              NK
+            </div>
+            <p className="font-semibold text-base text-blue-700">{profileData.name}</p>
+            <p><strong>GST No:</strong> {profileData.age}</p>
+            <p><strong>Email:</strong> {profileData.email}</p>
+            <p><strong>Phone:</strong> {profileData.phone}</p>
+            <p><strong>Address:</strong> {profileData.address}</p>
+          </div>
+        </div>
+
+        {/* Fixed Logout Button at Bottom */}
+        <div className="p-4 border-t">
+          <LogOut />
         </div>
       </div>
     </>
