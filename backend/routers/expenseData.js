@@ -6,6 +6,7 @@ import {
     deleteExpense,
     createCollection,
     getCollections,
+    renameCollection,
     deleteCol,
 } from '../controller/dataController.js'
 
@@ -16,6 +17,7 @@ expenseData.post('/add',add);
 expenseData.post('/createCollection',createCollection);
 expenseData.get('/getCollections',getCollections);
 expenseData.post('/getAllExpenses',getAllExpenses);
+expenseData.put('/renameCollection',renameCollection);
 expenseData.delete('/deleteCollection/:site',deleteCol);
 
 

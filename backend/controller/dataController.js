@@ -171,6 +171,27 @@ const deleteCol= async (req, res) => {
     };
 
 
+
+    const renameCollection = async (req, res) => {
+        const { oldName, newName } = req.body;
+
+        try {
+            // Rename the MongoDB collection
+            await mongoose.connection.db.renameCollection(oldName, newName);
+
+            // Fetch updated list of collection names
+            const collections = await mongoose.connection.db.listCollections().toArray();
+            const names = collections.map(col => col.name);
+
+            res.json({ success: true, message: `Renamed ${oldName} to ${newName}`, data: names });
+        } catch (err) {
+            console.error("Error renaming collection:", err);
+            res.status(500).json({ success: false, message: "Could not rename collection" });
+        }
+        };
+
+
+
 export {
     add,
     createCollection,
@@ -178,5 +199,6 @@ export {
     getAllExpenses,
     deleteCol,
     updateExpense,
+    renameCollection,
     deleteExpense,
 };
