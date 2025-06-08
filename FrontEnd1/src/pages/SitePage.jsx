@@ -343,7 +343,7 @@ export default function SitePage() {
               </option>
             ))}
           </select>
-          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">From Date</label>
+          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">From</label>
           <input
             type="date"
             value={fromDate}
@@ -351,7 +351,7 @@ export default function SitePage() {
             className="border p-2 rounded w-full sm:w-auto"
             placeholder="From Date"
           />
-          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">To Date</label>
+          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">To </label>
           <input
             type="date"
             value={toDate}
