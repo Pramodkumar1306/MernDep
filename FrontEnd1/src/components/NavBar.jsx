@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { ShoppingCart, User } from "lucide-react";
+import { User } from "lucide-react";
 import { IoMdClose } from "react-icons/io";
 
 export default function Navigation() {
   const [showProfile, setShowProfile] = useState(false);
 
   const profileData = {
-    name: "Pramod Kumar",
-    age: 24,
-    email: "pramod@example.com",
-    phone: "+91 9876543210",
-    address: "Punjab, India",
+    name: "NK Patil Construction",
+    age: "29EPKPP2663M1Z1",
+    email: "nkpatil3980@gmail.com",
+    phone: "+91 9448111276",
+    address: "BELAGAVI 591108",
   };
 
   return (
@@ -18,17 +18,7 @@ export default function Navigation() {
       {/* Top Navbar */}
       <nav className="bg-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Left: Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent hidden sm:block">
-                StyleCart
-              </span>
-            </div>
-
+          <div className="flex justify-end items-center h-16">
             {/* Right: Profile Icon */}
             <button onClick={() => setShowProfile(true)}>
               <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
@@ -60,9 +50,12 @@ export default function Navigation() {
             onClick={() => setShowProfile(false)}
           />
         </div>
-        <div className="p-4 space-y-3 text-sm text-gray-700">
-          <p><strong>Name:</strong> {profileData.name}</p>
-          <p><strong>Age:</strong> {profileData.age}</p>
+        <div className="p-4 space-y-3 text-sm text-gray-700 flex flex-col items-center">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold">
+            NK
+          </div>
+          <p className="font-semibold text-base text-blue-700">{profileData.name}</p>
+          <p><strong>GST No:</strong> {profileData.age}</p>
           <p><strong>Email:</strong> {profileData.email}</p>
           <p><strong>Phone:</strong> {profileData.phone}</p>
           <p><strong>Address:</strong> {profileData.address}</p>

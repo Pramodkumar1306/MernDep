@@ -285,7 +285,9 @@ export default function SitePage() {
       <div className="bg-white p-4 sm:p-6 rounded shadow mb-6">
         <h2 className="text-lg font-semibold mb-4">{editingIndex !== null ? "Edit Expense" : "Add New Expense"}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <label className="block sm:hidden text-sm font-medium text-gray-700 ">Date</label>
           <Input name="date" type="date" value={form.date} onChange={handleChange} placeholder="Date" />
+          {/* <Input name="date" type="date" value={form.date} onChange={handleChange} placeholder="Date" /> */}
           <Input name="description" value={form.description} onChange={handleChange} placeholder="Description" required />
           <Input name="amount" type="number" value={form.amount} onChange={handleChange} placeholder="Amount (₹)" required />
           <Select name="paymentMode" value={form.paymentMode} onChange={handleChange} options={paymentModes} />
@@ -341,6 +343,7 @@ export default function SitePage() {
               </option>
             ))}
           </select>
+          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">From Date</label>
           <input
             type="date"
             value={fromDate}
@@ -348,6 +351,7 @@ export default function SitePage() {
             className="border p-2 rounded w-full sm:w-auto"
             placeholder="From Date"
           />
+          <label className="block sm:hidden text-sm font-medium text-gray-700 mb-1">To Date</label>
           <input
             type="date"
             value={toDate}
