@@ -6,7 +6,6 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import letterhead from '../assets/letterhead.jpg'
 
-console.log(letterhead);
 export default function SitePage() {
   const navigate = useNavigate();
   const { site } = useParams();
@@ -23,8 +22,8 @@ export default function SitePage() {
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedPaymentMode, setSelectedPaymentMode] = useState("");
-  const [fromDate, setFromDate] = useState("");  // <-- added
-  const [toDate, setToDate] = useState("");      // <-- added
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
 
   const paymentModes = ["Cash", "UPI", "Bank Transfer"];
@@ -185,75 +184,67 @@ export default function SitePage() {
     }
   };
 
- const generatePDF = () => {
-  const doc = new jsPDF();
+  const generatePDF = () => {
+    const doc = new jsPDF();
 
-  const pdfWidth = doc.internal.pageSize.getWidth();
-  const pdfHeight = doc.internal.pageSize.getHeight();
-  doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
+    const pdfWidth = doc.internal.pageSize.getWidth();
+    const pdfHeight = doc.internal.pageSize.getHeight();
+    doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
 
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
-  doc.text(`${site}`, 10, 40, { align: "left" });
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`${site}`, 10, 40, { align: "left" });
 
-  // Format dates or fallback to "-"
-  const fromDateText = fromDate ? new Date(fromDate).toLocaleDateString("en-IN") : "-";
-  const toDateText = toDate ? new Date(toDate).toLocaleDateString("en-IN") : "-";
+    const fromDateText = fromDate ? new Date(fromDate).toLocaleDateString("en-IN") : "-";
+    const toDateText = toDate ? new Date(toDate).toLocaleDateString("en-IN") : "-";
 
-  // Show date range on the right side (aligned right)
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
-// doc.text(`     To: ${toDateText}`, pdfWidth - 10, 30, { align: "right" });
-  doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
 
-  const tableColumn = ["S.No", "Date", "Description", "Amount", "Payment Mode", "Category"];
-  const rowsPerPage = 28;
-  let startY = 45;
+    const tableColumn = ["S.No", "Date", "Description", "Amount", "Payment Mode", "Category"];
+    const rowsPerPage = 28;
+    let startY = 45;
 
-  for (let i = 0; i < filteredExpenses.length; i += rowsPerPage) {
-    const rowsChunk = filteredExpenses.slice(i, i + rowsPerPage).map((e, idx) => [
-      i + idx + 1,
-      new Date(e.date).toLocaleDateString("en-IN"),
-      e.description,
-      `$ ${Number(e.amount).toLocaleString("en-IN")}`,
-      e.paymentMode,
-      e.category,
-    ]);
+    for (let i = 0; i < filteredExpenses.length; i += rowsPerPage) {
+      const rowsChunk = filteredExpenses.slice(i, i + rowsPerPage).map((e, idx) => [
+        i + idx + 1,
+        new Date(e.date).toLocaleDateString("en-IN"),
+        e.description,
+        `$ ${Number(e.amount).toLocaleString("en-IN")}`,
+        e.paymentMode,
+        e.category,
+      ]);
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: rowsChunk,
-      startY,
-      margin: { left: 10, right: 10 },
-      theme: "striped",
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [22, 160, 133] },
-      pageBreak: "avoid",
-    });
+      autoTable(doc, {
+        head: [tableColumn],
+        body: rowsChunk,
+        startY,
+        margin: { left: 10, right: 10 },
+        theme: "striped",
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [22, 160, 133] },
+        pageBreak: "avoid",
+      });
 
-    startY = doc.internal.pageSize.getHeight() - 10;
-    if (i + rowsPerPage < filteredExpenses.length) {
-      doc.addPage();
-      doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`${site}`, 10, 40, { align: "left" });
+      startY = doc.internal.pageSize.getHeight() - 10;
+      if (i + rowsPerPage < filteredExpenses.length) {
+        doc.addPage();
+        doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${site}`, 10, 40, { align: "left" });
 
-      // Repeat date range on new pages as well
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
 
-      // doc.text(`From: ${fromDateText}`, pdfWidth - 10, 30, { align: "right" });
-      // doc.text(`To: ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
-
-      startY = 45;
+        startY = 45;
+      }
     }
-  }
 
-  doc.save(`${site}-expenses.pdf`);
-};
-  
+    doc.save(`${site}-expenses.pdf`);
+  };
 
   const downloadCSV = () => {
     if (filteredExpenses.length === 0) return;
@@ -294,7 +285,7 @@ export default function SitePage() {
       <div className="bg-white p-4 sm:p-6 rounded shadow mb-6">
         <h2 className="text-lg font-semibold mb-4">{editingIndex !== null ? "Edit Expense" : "Add New Expense"}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Input name="date" type="date" value={form.date} onChange={handleChange} />
+          <Input name="date" type="date" value={form.date} onChange={handleChange} placeholder="Date" />
           <Input name="description" value={form.description} onChange={handleChange} placeholder="Description" required />
           <Input name="amount" type="number" value={form.amount} onChange={handleChange} placeholder="Amount (₹)" required />
           <Select name="paymentMode" value={form.paymentMode} onChange={handleChange} options={paymentModes} />
@@ -350,7 +341,6 @@ export default function SitePage() {
               </option>
             ))}
           </select>
-          {/* Added From Date and To Date inputs */}
           <input
             type="date"
             value={fromDate}
@@ -370,7 +360,8 @@ export default function SitePage() {
         {filteredExpenses.length === 0 ? (
           <p className="text-gray-500">No expenses match the filters.</p>
         ) : (
-          <div className="w-full overflow-x-auto">
+          // ONLY on small screens allow horizontal scroll, on larger screens no scroll needed
+          <div className="overflow-x-auto sm:overflow-x-visible">
             <table className="min-w-[600px] w-full text-sm text-left border">
               <thead className="bg-gray-100">
                 <tr>
