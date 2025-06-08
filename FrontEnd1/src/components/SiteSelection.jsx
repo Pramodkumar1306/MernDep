@@ -82,7 +82,7 @@ export default function SiteSelection() {
       <NavBar />
 
       <div className="p-4 sm:p-6">
-        <h1 className="text-2xl sm:text-4xl font-bold text-center mb-2">ADD The Site Name</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold text-center mb-2">Add Site </h1>
         <p className="text-center text-gray-600 mb-6">Search and add items to your cart instantly</p>
 
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-10 w-full px-4">
@@ -93,7 +93,7 @@ export default function SiteSelection() {
             className="w-full sm:w-[400px] border border-blue-400 rounded-full px-6 py-2 outline-none"
           />
           <button onClick={addSite} className="w-full sm:w-auto bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-600">
-            + Add to Cart
+            Add New Site
           </button>
         </div>
 
