@@ -192,8 +192,8 @@ export default function SitePage() {
   const pdfHeight = doc.internal.pageSize.getHeight();
   doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
 
-  doc.setFontSize(16);
-  doc.setTextColor(22, 160, 133);
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
   doc.text(`${site}`, 10, 40, { align: "left" });
 
   // Format dates or fallback to "-"
@@ -203,8 +203,8 @@ export default function SitePage() {
   // Show date range on the right side (aligned right)
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
-  doc.text(`From: ${fromDateText}`, pdfWidth - 10, 30, { align: "right" });
-  doc.text(`To: ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
+// doc.text(`     To: ${toDateText}`, pdfWidth - 10, 30, { align: "right" });
+  doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
 
   const tableColumn = ["S.No", "Date", "Description", "Amount", "Payment Mode", "Category"];
   const rowsPerPage = 28;
@@ -235,15 +235,17 @@ export default function SitePage() {
     if (i + rowsPerPage < filteredExpenses.length) {
       doc.addPage();
       doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
-      doc.setFontSize(16);
-      doc.setTextColor(22, 160, 133);
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
       doc.text(`${site}`, 10, 40, { align: "left" });
 
       // Repeat date range on new pages as well
       doc.setFontSize(10);
       doc.setTextColor(0, 0, 0);
-      doc.text(`From: ${fromDateText}`, pdfWidth - 10, 30, { align: "right" });
-      doc.text(`To: ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
+      doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
+
+      // doc.text(`From: ${fromDateText}`, pdfWidth - 10, 30, { align: "right" });
+      // doc.text(`To: ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
 
       startY = 45;
     }
