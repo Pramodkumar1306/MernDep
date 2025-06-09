@@ -27,7 +27,7 @@ export default function SitePage() {
   const [editingIndex, setEditingIndex] = useState(null);
 
   const paymentModes = ["Cash", "UPI", "Bank Transfer"];
-  const categories = ["None", "Petrol/Desal", "Material", "Salary"];
+  const categories = ["None", "Petrol/Diesel", "Material", "Salary"];
 
   const filteredExpenses = expenses
     .filter((e) => {

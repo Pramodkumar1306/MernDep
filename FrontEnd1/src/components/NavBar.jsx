@@ -68,9 +68,10 @@ export default function Navigation() {
         </div>
 
         {/* Fixed Logout Button at Bottom */}
-        <div className="p-4 border-t bg-white sticky bottom-5">
+        <div className="w-full p-4 border-t bg-white sticky bottom-8">
           <LogOut />
         </div>
+
       </div>
     </>
   );
