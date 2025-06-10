@@ -91,7 +91,7 @@ const updateExpense = async (req, res) => {
     const siteName = req.body.site;
     const ExpenseModel = getModelBySite(siteName);
     const expenseId = req.params.id;
-
+    
     try {
         const updatedExpense = await ExpenseModel.findByIdAndUpdate(
         expenseId,
@@ -139,24 +139,32 @@ const getCollections = async (req, res) => {
 };
 
 
-
 const deleteExpense = async (req, res) => {
-    const siteName = req.params.site;  // changed from req.body.site
+    const siteName = req.params.site;
     const expenseId = req.params.id;
 
+    // console.log("🚨 DELETE CALLED:", siteName, expenseId);
+
     const ExpenseModel = getModelBySite(siteName);
+    if (!ExpenseModel) {
+        // console.log("❌ Invalid model for site:", siteName);
+        return res.status(400).json({ success: false, message: "Invalid site" });
+    }
 
     try {
         const deletedExpense = await ExpenseModel.findByIdAndDelete(expenseId);
         if (!deletedExpense) {
+            // console.log("❌ Expense not found for ID:", expenseId);
             return res.status(404).json({ success: false, message: "Expense not found" });
         }
+        // console.log("✅ Expense deleted:", deletedExpense._id);
         res.json({ success: true, message: "Expense deleted" });
     } catch (error) {
-        console.error(error);
+        console.error("🔥 Error deleting expense:", error);
         res.status(500).json({ success: false, message: "Error deleting expense" });
     }
 };
+
 
 
 const deleteCol= async (req, res) => {

@@ -54,12 +54,14 @@ export default function SitePage() {
         });
         const data = response.data.data || [];
         const normalized = data.map((item) => ({
+          _id: item._id, // <-- THIS IS MISSING
           date: item.date || item.Date || "",
           description: item.description || item.Description || "",
           amount: item.amount || item.Amount || 0,
           paymentMode: item.paymentMode || item.Payment || "",
           category: item.category || item.Category || "",
-        }));
+      }));
+
         setExpenses(normalized);
       } catch (err) {
         console.error("Failed to fetch expenses:", err);
@@ -73,133 +75,165 @@ export default function SitePage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddExpense = async () => {
-    if (!form.date || !form.description || !form.amount) {
-      alert("Please fill in all required fields.");
-      return;
-    }
+const handleAddExpense = async () => {
+  if (!form.date || !form.description || !form.amount) {
+    alert("Please fill in all required fields.");
+    return;
+  }
 
-    if (editingIndex !== null) {
-      const updated = [...expenses];
-      updated[editingIndex] = {
-        date: form.date,
-        description: form.description,
-        amount: form.amount,
-        paymentMode: form.paymentMode,
-        category: form.category,
-      };
-      setExpenses(updated);
-      setEditingIndex(null);
-      alert("✏️ Expense updated successfully!");
-    } else {
-      const payload = {
-        site,
-        Date: form.date,
-        Description: form.description,
-        Amount: form.amount,
-        Payment: form.paymentMode,
-        Category: form.category,
-      };
+  const formatDate = (date) => new Date(date).toISOString().slice(0, 10);
 
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/add`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        const result = await res.json();
-        if (result.success) {
-          setExpenses((prev) => [
-            ...prev,
-            {
-              date: form.date,
-              description: form.description,
-              amount: form.amount,
-              paymentMode: form.paymentMode,
-              category: form.category,
-            },
-          ]);
-          alert("✅ Expense Added successfully!");
-        } else {
-          alert("Failed to add expense: " + (result.message || "Unknown error"));
-        }
-      } catch (err) {
-        console.error("Error adding expense:", err);
-        alert("Server error while adding expense.");
-      }
-    }
-
-    setForm({
-      date: "",
-      description: "",
-      amount: "",
-      paymentMode: "Cash",
-      category: "Salary",
-    });
-  };
-
-  const handleEdit = (indexInFiltered) => {
-    const item = filteredExpenses[indexInFiltered];
-    const formatDate = (date) => new Date(date).toISOString().slice(0, 10);
-    const realIndex = expenses.findIndex(
-      (e) =>
-        formatDate(e.date) === formatDate(item.date) &&
-        e.description === item.description &&
-        Number(e.amount) === Number(item.amount) &&
-        e.paymentMode === item.paymentMode &&
-        e.category === item.category
-    );
-
-    if (realIndex !== -1) {
-      setForm({
-        date: formatDate(item.date),
-        description: item.description,
-        amount: item.amount,
-        paymentMode: item.paymentMode,
-        category: item.category,
-      });
-      setEditingIndex(realIndex);
-    }
-  };
-
-const handleDelete = async (indexInFiltered) => {
-  if (window.confirm("Are you sure you want to delete this expense?")) {
-    const itemToDelete = filteredExpenses[indexInFiltered];
+  if (editingIndex !== null) {
+    // Editing mode — make an API call
+    const payload = {
+      site,
+      Date: form.date,
+      Description: form.description,
+      Amount: form.amount,
+      Payment: form.paymentMode,
+      Category: form.category,
+    };
 
     try {
-      const res = await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/delete`, {
-        data: {
-          site,
-          id: itemToDelete._id  // make sure you're passing correct ID
-        }
-      });
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/api/expenses/update/${form._id}`,
+        payload
+      );
 
       if (res.data.success) {
-        const indexInExpenses = expenses.findIndex(
-          (e) =>
-            e.date === itemToDelete.date &&
-            e.description === itemToDelete.description &&
-            Number(e.amount) === Number(itemToDelete.amount) &&
-            e.paymentMode === itemToDelete.paymentMode &&
-            e.category === itemToDelete.category
-        );
-
-        if (indexInExpenses > -1) {
-          const updated = [...expenses];
-          updated.splice(indexInExpenses, 1);
-          setExpenses(updated);
-        }
-
-        alert("🗑️ Expense deleted successfully!");
+        const updated = [...expenses];
+        updated[editingIndex] = {
+          _id: form._id,
+          date: form.date,
+          description: form.description,
+          amount: form.amount,
+          paymentMode: form.paymentMode,
+          category: form.category,
+        };
+        setExpenses(updated);
+        setEditingIndex(null);
+        alert("✏️ Expense updated successfully!");
       } else {
-        alert("Failed to delete from server: " + (res.data.message || "Unknown error"));
+        alert("Failed to update expense: " + (res.data.message || "Unknown error"));
       }
     } catch (err) {
-      console.error("Error deleting expense:", err);
-      alert("Server error while deleting expense.");
+      console.error("Error updating expense:", err);
+      alert("Server error while updating expense.");
+    }
+  } else {
+    // Add new expense mode
+    const payload = {
+      site,
+      Date: form.date,
+      Description: form.description,
+      Amount: form.amount,
+      Payment: form.paymentMode,
+      Category: form.category,
+    };
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        setExpenses((prev) => [
+          ...prev,
+          {
+            date: form.date,
+            description: form.description,
+            amount: form.amount,
+            paymentMode: form.paymentMode,
+            category: form.category,
+          },
+        ]);
+        alert("✅ Expense Added successfully!");
+      } else {
+        alert("Failed to add expense: " + (result.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Error adding expense:", err);
+      alert("Server error while adding expense.");
     }
   }
+
+  // Reset form
+  setForm({
+    date: "",
+    description: "",
+    amount: "",
+    paymentMode: "Cash",
+    category: "Salary",
+  });
+};
+
+
+    const handleEdit = (indexInFiltered) => {
+      const item = filteredExpenses[indexInFiltered];
+      console.log(item)
+      const formatDate = (date) => new Date(date).toISOString().slice(0, 10);
+      const realIndex = expenses.findIndex(
+        (e) =>
+          formatDate(e.date) === formatDate(item.date) &&
+          e.description === item.description &&
+          Number(e.amount) === Number(item.amount) &&
+          e.paymentMode === item.paymentMode &&
+          e.category === item.category
+      );
+      // console.log(realIndex);
+      
+      if (realIndex !== -1) {
+        setForm({
+          _id: item._id, // <-- Add this li
+          date: formatDate(item.date),
+          description: item.description,
+          amount: item.amount,
+          paymentMode: item.paymentMode,
+          category: item.category,
+        });
+        setEditingIndex(realIndex);
+      }
+    };
+
+const handleDelete = async (indexInFiltered) => {
+  if (window.confirm("Are you sure you want to delete this expense?")) {
+    const itemToDelete = filteredExpenses[indexInFiltered];
+    // console.log(itemToDelete._id);
+    
+    console.log(itemToDelete)
+    try {
+      const res = await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/api/expenses/delete/${site}/${itemToDelete._id}`
+      );
+
+      if (res.data.success) {
+        const indexInExpenses = expenses.findIndex(
+          (e) =>
+            e.date === itemToDelete.date &&
+            e.description === itemToDelete.description &&
+            Number(e.amount) === Number(itemToDelete.amount) &&
+            e.paymentMode === itemToDelete.paymentMode &&
+            e.category === itemToDelete.category
+        );
+
+        if (indexInExpenses > -1) {
+          const updated = [...expenses];
+          updated.splice(indexInExpenses, 1);
+          setExpenses(updated);
+        }
+
+        alert("🗑️ Expense deleted successfully!");
+      } else {
+        alert("Failed to delete from server: " + (res.data.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Error deleting expense:", err);
+      alert("Server error while deleting expense.");
+    }
+  }
 };
 
 
@@ -291,9 +325,18 @@ const handleDelete = async (indexInFiltered) => {
 
   return (
     <div className="p-4 sm:p-6 bg-gray-100 min-h-screen pt-8 sm:pt-12">
-      <div className="hidden sm:block mb-4 flex justify-end">
-        <LogOut />
-      </div>
+      
+        <div className="mb-4 flex justify-center sm:justify-end">
+          {/* <LogOut /> */}
+          <button
+            onClick={() => navigate("/")}
+            className="w-full sm:w-auto px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded"
+          >
+            ← Back
+          </button>
+        </div>
+
+
       <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-800 mb-6">Expense Tracker</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -406,10 +449,10 @@ const handleDelete = async (indexInFiltered) => {
                     <td className="border px-2 py-2">{e.paymentMode}</td>
                     <td className="border px-2 py-2">{e.category}</td>
                     <td className="border px-2 py-2 flex gap-2">
-                      <button className="text-blue-600" onClick={() => handleEdit(i)}>
+                      <button className="text-blue-600 cursor-pointer"  onClick={() => handleEdit(i)}>
                         Edit
                       </button>
-                      <button className="text-red-600" onClick={() => handleDelete(i)}>
+                      <button className="text-red-600 cursor-pointer" onClick={() => handleDelete(i)}>
                         Delete
                       </button>
                     </td>
@@ -419,12 +462,7 @@ const handleDelete = async (indexInFiltered) => {
             </table>
           </div>
         )}
-        <button
-          onClick={() => navigate("/")}
-          className="mt-6 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded w-full sm:w-auto"
-        >
-          ← Back
-        </button>
+        
       </div>
     </div>
   );
