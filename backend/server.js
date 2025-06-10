@@ -18,7 +18,7 @@ const startServer = async () => {
 
     app.use('/api/expenses', expenseData);
     app.use('/api/test', testRoute);
-
+    // app.use('/')
     app.get('/', (req, res) => {
         res.send("API Working");
     });

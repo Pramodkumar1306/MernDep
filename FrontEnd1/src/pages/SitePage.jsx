@@ -141,10 +141,10 @@ export default function SitePage() {
 
   const handleEdit = (indexInFiltered) => {
     const item = filteredExpenses[indexInFiltered];
-
+    const formatDate = (date) => new Date(date).toISOString().slice(0, 10);
     const realIndex = expenses.findIndex(
       (e) =>
-        e.date === item.date &&
+        formatDate(e.date) === formatDate(item.date) &&
         e.description === item.description &&
         Number(e.amount) === Number(item.amount) &&
         e.paymentMode === item.paymentMode &&
@@ -153,7 +153,7 @@ export default function SitePage() {
 
     if (realIndex !== -1) {
       setForm({
-        date: item.date,
+        date: formatDate(item.date),
         description: item.description,
         amount: item.amount,
         paymentMode: item.paymentMode,
@@ -163,26 +163,45 @@ export default function SitePage() {
     }
   };
 
-  const handleDelete = (indexInFiltered) => {
-    if (window.confirm("Are you sure you want to delete this expense?")) {
-      const itemToDelete = filteredExpenses[indexInFiltered];
+const handleDelete = async (indexInFiltered) => {
+  if (window.confirm("Are you sure you want to delete this expense?")) {
+    const itemToDelete = filteredExpenses[indexInFiltered];
 
-      const indexInExpenses = expenses.findIndex(
-        (e) =>
-          e.date === itemToDelete.date &&
-          e.description === itemToDelete.description &&
-          Number(e.amount) === Number(itemToDelete.amount) &&
-          e.paymentMode === itemToDelete.paymentMode &&
-          e.category === itemToDelete.category
-      );
+    try {
+      const res = await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/expenses/delete`, {
+        data: {
+          site,
+          id: itemToDelete._id  // make sure you're passing correct ID
+        }
+      });
 
-      if (indexInExpenses > -1) {
-        const updated = [...expenses];
-        updated.splice(indexInExpenses, 1);
-        setExpenses(updated);
+      if (res.data.success) {
+        const indexInExpenses = expenses.findIndex(
+          (e) =>
+            e.date === itemToDelete.date &&
+            e.description === itemToDelete.description &&
+            Number(e.amount) === Number(itemToDelete.amount) &&
+            e.paymentMode === itemToDelete.paymentMode &&
+            e.category === itemToDelete.category
+        );
+
+        if (indexInExpenses > -1) {
+          const updated = [...expenses];
+          updated.splice(indexInExpenses, 1);
+          setExpenses(updated);
+        }
+
+        alert("🗑️ Expense deleted successfully!");
+      } else {
+        alert("Failed to delete from server: " + (res.data.message || "Unknown error"));
       }
+    } catch (err) {
+      console.error("Error deleting expense:", err);
+      alert("Server error while deleting expense.");
     }
-  };
+  }
+};
+
 
   const generatePDF = () => {
     const doc = new jsPDF();

@@ -32,7 +32,9 @@
                 res.json({ success: true, data: expenses });
             } catch (error) {
                 console.error(error);
-                res.status(500).json({ success: false, message: "Error fetching expenses" });
+                res.status(500).json({ success: false, 
+                                        message: "Error fetching expenses" 
+                                    });
             }
         };
 
