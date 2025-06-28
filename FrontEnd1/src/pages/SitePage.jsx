@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import LogOut from "../components/LogOut.jsx";
+// import LogOut from "../components/LogOut.jsx";
 import axios from "axios";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -81,8 +81,9 @@ const handleAddExpense = async () => {
     return;
   }
 
-  const formatDate = (date) => new Date(date).toISOString().slice(0, 10);
-
+  // const formatDate = (date) => new Date(date).toISOString().slice(0, 10);
+  console.log(editingIndex);
+  
   if (editingIndex !== null) {
     // Editing mode — make an API call
     const payload = {
@@ -143,6 +144,7 @@ const handleAddExpense = async () => {
         setExpenses((prev) => [
           ...prev,
           {
+            _id: result.data ? result.data._id : undefined,
             date: form.date,
             description: form.description,
             amount: form.amount,
@@ -150,6 +152,19 @@ const handleAddExpense = async () => {
             category: form.category,
           },
         ]);
+
+
+        // setExpenses((prev) => [
+        //   ...prev,
+        //   {
+        //     //  _id: result.data._id, // <-- Add this
+        //     date: form.date,
+        //     description: form.description,
+        //     amount: form.amount,
+        //     paymentMode: form.paymentMode,
+        //     category: form.category,
+        //   },
+        // ]);
         alert("✅ Expense Added successfully!");
       } else {
         alert("Failed to add expense: " + (result.message || "Unknown error"));
@@ -175,14 +190,17 @@ const handleAddExpense = async () => {
       const item = filteredExpenses[indexInFiltered];
       console.log(item)
       const formatDate = (date) => new Date(date).toISOString().slice(0, 10);
-      const realIndex = expenses.findIndex(
-        (e) =>
-          formatDate(e.date) === formatDate(item.date) &&
-          e.description === item.description &&
-          Number(e.amount) === Number(item.amount) &&
-          e.paymentMode === item.paymentMode &&
-          e.category === item.category
-      );
+
+      const realIndex = expenses.findIndex((e) => e._id === item._id);
+
+      // const realIndex = expenses.findIndex(
+      //   (e) =>
+      //     formatDate(e.date) === formatDate(item.date) &&
+      //     e.description === item.description &&
+      //     Number(e.amount) === Number(item.amount) &&
+      //     e.paymentMode === item.paymentMode &&
+      //     e.category === item.category
+      // );
       // console.log(realIndex);
       
       if (realIndex !== -1) {
@@ -210,14 +228,16 @@ const handleDelete = async (indexInFiltered) => {
       );
 
       if (res.data.success) {
-        const indexInExpenses = expenses.findIndex(
-          (e) =>
-            e.date === itemToDelete.date &&
-            e.description === itemToDelete.description &&
-            Number(e.amount) === Number(itemToDelete.amount) &&
-            e.paymentMode === itemToDelete.paymentMode &&
-            e.category === itemToDelete.category
-        );
+        const indexInExpenses = expenses.findIndex((e) => e._id === itemToDelete._id);
+
+//         const indexInExpenses = expenses.findIndex(
+//           (e) =>
+//             e.date === itemToDelete.date &&
+//             e.description === itemToDelete.description &&
+//             Number(e.amount) === Number(itemToDelete.amount) &&
+//             e.paymentMode === itemToDelete.paymentMode &&
+//             e.category === itemToDelete.category
+//         );
 
         if (indexInExpenses > -1) {
           const updated = [...expenses];
@@ -237,68 +257,76 @@ const handleDelete = async (indexInFiltered) => {
 };
 
 
-  const generatePDF = () => {
-    const doc = new jsPDF();
+const generatePDF = () => {
+  const doc = new jsPDF();
+  const pdfWidth = doc.internal.pageSize.getWidth();
+  const pdfHeight = doc.internal.pageSize.getHeight();
 
-    const pdfWidth = doc.internal.pageSize.getWidth();
-    const pdfHeight = doc.internal.pageSize.getHeight();
-    doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
+  doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
 
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`${site}`, 10, 40, { align: "left" });
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`${site}`, 10, 40, { align: "left" });
 
-    const fromDateText = fromDate ? new Date(fromDate).toLocaleDateString("en-IN") : "-";
-    const toDateText = toDate ? new Date(toDate).toLocaleDateString("en-IN") : "-";
+  const fromDateText = fromDate ? new Date(fromDate).toLocaleDateString("en-IN") : "-";
+  const toDateText = toDate ? new Date(toDate).toLocaleDateString("en-IN") : "-";
 
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
+  doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
 
-    const tableColumn = ["S.No", "Date", "Description", "Amount", "Payment Mode", "Category"];
-    const rowsPerPage = 28;
-    let startY = 45;
+  const tableColumn = ["S.No", "Date", "Description", "Amount", "Payment Mode", "Category"];
+  const rowsPerPage = 28;
+  let startY = 45;
 
-    for (let i = 0; i < filteredExpenses.length; i += rowsPerPage) {
-      const rowsChunk = filteredExpenses.slice(i, i + rowsPerPage).map((e, idx) => [
-        i + idx + 1,
-        new Date(e.date).toLocaleDateString("en-IN"),
-        e.description,
-        `${Number(e.amount).toLocaleString("en-IN")}`,
-        e.paymentMode,
-        e.category,
+  // 🔢 Total amount
+  const totalAmount = filteredExpenses.reduce((acc, e) => acc + Number(e.amount), 0);
+
+  for (let i = 0; i < filteredExpenses.length; i += rowsPerPage) {
+    const isLastChunk = i + rowsPerPage >= filteredExpenses.length;
+
+    const rowsChunk = filteredExpenses.slice(i, i + rowsPerPage).map((e, idx) => [
+      i + idx + 1,
+      new Date(e.date).toLocaleDateString("en-IN"),
+      e.description,
+      `${Number(e.amount).toLocaleString("en-IN")}`,
+      e.paymentMode,
+      e.category,
+    ]);
+
+    // ✅ Add TOTAL row only on the last chunk
+    if (isLastChunk) {
+      rowsChunk.push([
+        { content: "", colSpan: 2 },
+        { content: "Total", styles: { halign: "right", fontStyle: "bold" } },
+        { content: `${totalAmount.toLocaleString("en-IN")}`, styles: { fontStyle: "bold" } },
+        "", ""
       ]);
-
-      autoTable(doc, {
-        head: [tableColumn],
-        body: rowsChunk,
-        startY,
-        margin: { left: 10, right: 10 },
-        theme: "striped",
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [22, 160, 133] },
-        3:{halign:'center'},
-        pageBreak: "avoid",
-      });
-
-      startY = doc.internal.pageSize.getHeight() - 10;
-      if (i + rowsPerPage < filteredExpenses.length) {
-        doc.addPage();
-        doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`${site}`, 10, 40, { align: "left" });
-
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
-
-        startY = 45;
-      }
     }
 
-    doc.save(`${site}-expenses.pdf`);
-  };
+    autoTable(doc, {
+      head: [tableColumn],
+      body: rowsChunk,
+      startY,
+      margin: { left: 10, right: 10 },
+      theme: "striped",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [22, 160, 133] },
+      pageBreak: "avoid",
+    });
+
+    if (!isLastChunk) {
+      doc.addPage();
+      doc.addImage(letterhead, "JPEG", 0, 0, pdfWidth, pdfHeight);
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${site}`, 10, 40, { align: "left" });
+      doc.text(`From: ${fromDateText}  ${toDateText}`, pdfWidth - 10, 40, { align: "right" });
+      startY = 45;
+    }
+  }
+
+  doc.save(`${site}-expenses.pdf`);
+};
+
 
   const downloadCSV = () => {
     if (filteredExpenses.length === 0) return;
@@ -371,6 +399,7 @@ const handleDelete = async (indexInFiltered) => {
             <button onClick={downloadCSV} className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
               Download CSV
             </button>
+            
           </div>
         </div>
 
@@ -428,7 +457,7 @@ const handleDelete = async (indexInFiltered) => {
           <p className="text-gray-500">No expenses match the filters.</p>
         ) : (
           // ONLY on small screens allow horizontal scroll, on larger screens no scroll needed
-          <div className="overflow-x-auto sm:overflow-x-visible">
+          <div className="sm:overflow-x-visible overflow-x-auto">
             <table className="min-w-[600px] w-full text-sm text-left border">
               <thead className="bg-gray-100">
                 <tr>
