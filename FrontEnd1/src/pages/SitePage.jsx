@@ -27,7 +27,7 @@ export default function SitePage() {
   const [editingIndex, setEditingIndex] = useState(null);
 
   const paymentModes = ["Cash", "UPI", "Bank Transfer"];
-  const categories = ["None", "Petrol/Diesel", "Material", "Salary"];
+  const categories = ["None", "Fuel", "Material", "Salary","Miscellaneous"];
 
   const filteredExpenses = expenses
     .filter((e) => {
@@ -151,9 +151,7 @@ const handleAddExpense = async () => {
             paymentMode: form.paymentMode,
             category: form.category,
           },
-        ]);
-
-
+        ]); 
         // setExpenses((prev) => [
         //   ...prev,
         //   {
@@ -176,7 +174,8 @@ const handleAddExpense = async () => {
   }
 
   // Reset form
-  setForm({
+setForm({
+    _id:null,
     date: "",
     description: "",
     amount: "",
@@ -185,14 +184,11 @@ const handleAddExpense = async () => {
   });
 };
 
-
-    const handleEdit = (indexInFiltered) => {
+const handleEdit = (indexInFiltered) => {
       const item = filteredExpenses[indexInFiltered];
       console.log(item)
       const formatDate = (date) => new Date(date).toISOString().slice(0, 10);
-
       const realIndex = expenses.findIndex((e) => e._id === item._id);
-
       // const realIndex = expenses.findIndex(
       //   (e) =>
       //     formatDate(e.date) === formatDate(item.date) &&
@@ -222,9 +218,9 @@ const handleDelete = async (indexInFiltered) => {
     // console.log(itemToDelete._id);
     
     console.log(itemToDelete)
-    try {
+    try {
       const res = await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/api/expenses/delete/${site}/${itemToDelete._id}`
+        `${import.meta.env.VITE_API_BASE_URL}/api/expenses/delete/${site}/${itemToDelete._id}`
       );
 
       if (res.data.success) {
@@ -238,22 +234,21 @@ const handleDelete = async (indexInFiltered) => {
 //             e.paymentMode === itemToDelete.paymentMode &&
 //             e.category === itemToDelete.category
 //         );
+        if (indexInExpenses > -1) {
+          const updated = [...expenses];
+          updated.splice(indexInExpenses, 1);
+          setExpenses(updated);
+        }
 
-        if (indexInExpenses > -1) {
-          const updated = [...expenses];
-          updated.splice(indexInExpenses, 1);
-          setExpenses(updated);
-        }
-
-        alert("🗑️ Expense deleted successfully!");
-      } else {
-        alert("Failed to delete from server: " + (res.data.message || "Unknown error"));
-      }
-    } catch (err) {
-      console.error("Error deleting expense:", err);
-      alert("Server error while deleting expense.");
-    }
-  }
+        alert("🗑️ Expense deleted successfully!");
+      } else {
+          alert("Failed to delete from server: " + (res.data.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Error deleting expense:", err);
+      alert("Server error while deleting expense.");
+    }
+  }
 };
 
 
@@ -353,7 +348,6 @@ const generatePDF = () => {
 
   return (
     <div className="p-4 sm:p-6 bg-gray-100 min-h-screen pt-8 sm:pt-12">
-      
         <div className="mb-4 flex justify-center sm:justify-end">
           {/* <LogOut /> */}
           <button
@@ -461,7 +455,7 @@ const generatePDF = () => {
             <table className="min-w-[600px] w-full text-sm text-left border">
               <thead className="bg-gray-100">
                 <tr>
-                  {["SNo", "Date", "Description", "Amount (₹)", "Payment", "Mode", "Actions"].map((head, i) => (
+                  {["SNo", "Date", "Description", "Amount (₹)", "Payment Mode", "Category", "Actions"].map((head, i) => (
                     <th key={i} className="border px-2 py-2 whitespace-nowrap">
                       {head}
                     </th>
@@ -485,6 +479,7 @@ const generatePDF = () => {
                         Delete
                       </button>
                     </td>
+                    <td></td>
                   </tr>
                 ))}
               </tbody>
