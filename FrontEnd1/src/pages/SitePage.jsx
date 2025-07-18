@@ -5,6 +5,7 @@ import axios from "axios";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import letterhead from '../assets/letterhead.jpg'
+  import * as XLSX from "xlsx";
 
 export default function SitePage() {
   const navigate = useNavigate();
@@ -323,26 +324,50 @@ const generatePDF = () => {
 };
 
 
-  const downloadCSV = () => {
-    if (filteredExpenses.length === 0) return;
-    const headers = ["#", "Date", "Description", "Amount", "Payment Mode", "Category"];
-    const rows = filteredExpenses.map((e, i) => [
-      i + 1,
-      new Date(e.date).toLocaleDateString("en-IN"),
-      e.description,
-      e.amount,
-      e.paymentMode,
-      e.category,
-    ]);
-    const total = filteredExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-    rows.push(["", "", "", `Total: ₹  ${total}`, "", ""]);
-    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `${site}-expenses.csv`;
-    link.click();
-  };
+  // const downloadCSV = () => {
+  //   if (filteredExpenses.length === 0) return;
+  //   const headers = ["#", "Date", "Description", "Amount", "Payment Mode", "Category"];
+  //   const rows = filteredExpenses.map((e, i) => [
+  //     i + 1,
+  //     new Date(e.date).toLocaleDateString("en-IN"),
+  //     e.description,
+  //     e.amount,
+  //     e.paymentMode,
+  //     e.category,
+  //   ]);
+  //   const total = filteredExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+  //   rows.push(["", "", "", `Total: ₹  ${total}`, "", ""]);
+  //   const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+  //   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  //   const link = document.createElement("a");
+  //   link.href = URL.createObjectURL(blob);
+  //   link.download = `${site}-expenses.csv`;
+  //   link.click();
+  // };
+
+ 
+
+const downloadCSV = () => {
+  if (filteredExpenses.length === 0) return;
+  const headers = ["#", "Date", "Description", "Amount", "Payment Mode", "Category"];
+  const rows = filteredExpenses.map((e, i) => [
+    i + 1,
+    new Date(e.date).toLocaleDateString("en-IN"),
+    e.description,
+    e.amount,
+    e.paymentMode,
+    e.category,
+  ]);
+  const total = filteredExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+  rows.push(["", "", "", `Total: ₹  ${total}`, "", ""]);
+
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Expenses");
+
+  XLSX.writeFile(workbook, `${site}-expenses.xlsx`);
+};
+
 
   const total = filteredExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
 
