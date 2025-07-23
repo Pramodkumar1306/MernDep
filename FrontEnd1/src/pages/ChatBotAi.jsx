@@ -338,6 +338,9 @@
     case "thanks":
         botReply = "Anytime!";
         break;
+    case "varun":
+        botReply = "Vo sub sa bada chutiya hai"
+        break;
     case "what is your purpose":
         botReply = "To help, inform, and make your day better!";
         break;
