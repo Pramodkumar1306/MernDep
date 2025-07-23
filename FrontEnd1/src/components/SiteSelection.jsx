@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import NavBar from '../components/NavBar.jsx';
 import { Eye, Edit, Trash } from 'lucide-react';
+import ChartBotAi from '../pages/ChatBotAi.jsx'
 
 export default function SiteSelection() {
   const [sites, setSites] = useState([]);
@@ -96,7 +97,7 @@ export default function SiteSelection() {
             Add New Site
           </button>
         </div>
-
+        <ChartBotAi/>
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-lg sm:text-xl font-semibold mb-4">Your Sites</h2>
           {sites.length === 0 ? (
